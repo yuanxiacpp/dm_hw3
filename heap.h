@@ -25,6 +25,13 @@ void freeHeap(struct Heap *h) {
   free(h);
   return;
 }
+void printHeap(struct Heap *h) {
+  int i;
+  for (i = 0; i < h->size; i++) 
+    printf("(%8.4f, %d)\t", h->content[i].value, h->content[i].idx);
+  printf("\n");
+  return;
+}
 void swapItem(struct heapItem *a, struct heapItem *b) {
   struct heapItem tmp;
   tmp = *a;
@@ -55,21 +62,28 @@ void heapDown(struct Heap *h) {
   while (left < h->size) {
     //consider current, left, right
     if (right < h->size) {
-      if (h->content[current].value <= h->content[left].value 
-	  && h->content[current].value <= h->content[right].value) {
-	swapItem(&h->content[current], &h->content[right]);
-	current = right;
-	left = 2*current + 1;
-	right = 2*current + 2;
+      double left_value = h->content[left].value;
+      double right_value = h->content[right].value;
+      double current_value = h->content[current].value;
+      if (current < left_value && current_value < right_value) {
+	if (left_value < right_value) {
+	  swapItem(&h->content[current], &h->content[right]);
+	  current = right;
+	}
+	else {
+	  swapItem(&h->content[current], &h->content[left]);
+	  current = left;
+	}
       }
-      else if (h->content[current].value <= h->content[right].value
-	       && h->content[right].value <= h->content[left].value) {
+      else if (current_value < left_value) {
 	swapItem(&h->content[current], &h->content[left]);
 	current = left;
-	left = 2*current + 1;
-	right = 2*current + 2;
       }
-      else
+      else if (current_value < right_value) {
+	swapItem(&h->content[current], &h->content[right]);
+	current = right;
+      }
+      else 
 	break;
     }
     //consider current, left
@@ -77,12 +91,12 @@ void heapDown(struct Heap *h) {
       if (h->content[current].value < h->content[left].value) {
 	swapItem(&h->content[current], &h->content[left]);
 	current = left;
-	left = 2*current + 1;
-	right = 2*current + 2;
       }
       else
 	break;
     }
+    left = 2*current + 1;
+    right = 2*current + 2;
   }
   return;
 }
@@ -102,4 +116,14 @@ void insertHeap(struct Heap *h, struct heapItem *item) {
     }
   }
   return;
+}
+int popHeap(struct Heap *h) {
+  int result = -1;
+  if (h->size > 0) {
+    result = h->content[0].idx;
+    swapItem(&h->content[0], &h->content[h->size - 1]);
+    h->size--;
+    heapDown(h);
+  }
+  return result;
 }
