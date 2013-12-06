@@ -6,6 +6,8 @@
 #include <time.h>
 #include "heap.h"
 
+int BIG_NUMBER = 100000;
+
 void printMatrix(int *a, int row, int col) {
   int i, j;
   for (i = 0; i < row; ++i) {
@@ -34,6 +36,22 @@ int compareInt(const void *a, const void *b) {
   const int *right = b;
   return *left - *right;
 }
+void addNewEntry(int **actualArray, int row) {
+  return;
+}
+
+void seek(double *a, int n, int k, int *iz) {
+  int i, j;
+  int *permutation = (int*)malloc(n*sizeof(int));
+  for (i = 0; i < n; i++)
+    permutation[i] = i; 
+  
+  double boxArray[BIG_NUMBER][4];
+  int actualArray[BIG_NUMBER][8];
+  int idx = 0;
+  actualArray[idx] = {0, 0, n-1, -1, 0, 0, 0, 0};
+  
+}
 
 void find_k_smallest_naive(double *d_matrix, int n, int k, int row, int *iz) {
   int i;
@@ -56,11 +74,6 @@ void find_k_smallest_naive(double *d_matrix, int n, int k, int row, int *iz) {
   printf("\n");
   return;
 }
-
-void seek(double *a, int n, int k, int *iz) {
-  
-}
-
 void seek_naive(double *a, int n, int k, int *iz) {
   double *d_matrix = (double*)malloc(n*n*sizeof(double)); //keep track all the distances
   int i, j;
