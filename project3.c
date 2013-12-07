@@ -70,9 +70,9 @@ void find_k_smallest(double x, double y, int points[], int length, int k, int ro
 
   for (i = k-1; i >= 0; --i)
     iz[row*k+i] = popHeap(h);
-  for (i = 0; i < k; ++i)
-    printf("%d\t", iz[row*k+i]);
-  printf("\n");
+  //for (i = 0; i < k; ++i)
+  //  printf("%d\t", iz[row*k+i]);
+  //printf("\n");
   return;
 
 }
@@ -88,14 +88,14 @@ void find_k_smallest_naive(double *d_matrix, int n, int k, int row, int *iz) {
     elem->idx = i;
     insertHeap(h, elem);
   }
-  printHeap(h);
-  getchar();
+  //printHeap(h);
+  //getchar();
 
   for (i = k-1; i >= 0; --i)
     iz[row*k+i] = popHeap(h);
-  for (i = 0; i < k; ++i)
-    printf("%d\t", iz[row*k+i]);
-  printf("\n");
+  //for (i = 0; i < k; ++i)
+  //  printf("%d\t", iz[row*k+i]);
+  //printf("\n");
   return;
 }
 void seek_naive(double *a, int n, int k, int *iz) {
@@ -112,18 +112,20 @@ void seek_naive(double *a, int n, int k, int *iz) {
       d_matrix[j*n+i] = d;
     }
 
-  printf("Distances\n");
-  printDoubleMatrix(d_matrix, n, n);
+  //printf("Distances\n");
+  //printDoubleMatrix(d_matrix, n, n);
 
 
   for (i = 0; i < n; i++) 
     find_k_smallest_naive(d_matrix, n, k, i, iz);
+  return;
 }
 void addNewBoxEntry(double boxArray[][4], int row, double x1, double x2, double y1, double y2) {
   boxArray[row][0] = x1;
   boxArray[row][1] = x2;
   boxArray[row][2] = y1;
   boxArray[row][3] = y2;
+  //printf("box entry %d: [%f, %f], [%f, %f]\n", row, x1, x2, y1, y2);
   return;
 }
 
@@ -146,7 +148,11 @@ double getRadius(double x, double y, double boxArray[][4], int f) {
 }
 
 
-int isInBox(int x, int y, double boxArray[][4], int row) {
+int isInBox(double x, double y, double boxArray[][4], int row) {
+  printf("(%f, %f) in range [%f, %f] and [%f, %f]\n",
+  	 x, y, boxArray[row][0], boxArray[row][1],
+  	 boxArray[row][2], boxArray[row][3]);
+
   if (x < boxArray[row][0] || x > boxArray[row][1])
     return 0;
   if (y < boxArray[row][2] || y > boxArray[row][3])
@@ -170,7 +176,6 @@ void quadSplit(int actualArray[][8], double boxArray[][4], int *permutation, int
   addNewBoxEntry(boxArray, next+3, (x1+x2)/2, x2, y1, (y1+y2)/2);
   
 
-  printf("21\n");
   int i;
   int count = 0;
   while (count < 4) {
@@ -185,6 +190,8 @@ void quadSplit(int actualArray[][8], double boxArray[][4], int *permutation, int
       }
     }
     //printf("22\n");
+    printf("row=%d, start=%d, end=%d\n", next+count, head, s-1);
+    getchar();
     addNewActualEntry(actualArray, next+count, head, s-1, current);
     actualArray[current][CHILDREN+count] = next+count;
     count++;
@@ -227,8 +234,12 @@ void seek(double *a, int n, int k, int *iz) {
   int current = 0;
   int next = 1;
   while (current < next) {
+    //printf("current=%d, next=%d\n", current, next);
     //count how many points are there in the section
-    if (actualArray[current][END]-actualArray[current][START] > k) {
+    int e = actualArray[current][END];
+    int s = actualArray[current][START];
+    //printf("e=%d, s=%d\n", e, s);
+    if (e-s > k) {
       quadSplit(actualArray, boxArray, permutation, current, next, a, n);
       next += 4;
     }
@@ -301,9 +312,15 @@ void problem(int n, int k) {
   seek(a, n, k, iz);
   printf("Result\n");
   printMatrix(iz, n, k);
+
+
+  seek_naive(a, n, k, iz);
+  printf("Result\n");
+  printMatrix(iz, n, k);
+
 }
 int main() {
   srand((unsigned)time(NULL));
-  problem(10, 1);
+  problem(5, 2);
   return 0;
 }
