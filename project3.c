@@ -138,8 +138,8 @@ void seek_naive(double *a, int n, int k, int *iz) {
       d_matrix[j*n+i] = d;
     }
 
-  printf("Distances\n");
-  printDoubleMatrix(d_matrix, n, n);
+  //printf("Distances\n");
+  //printDoubleMatrix(d_matrix, n, n);
 
 
   for (i = 0; i < n; i++) 
@@ -282,6 +282,7 @@ void seek(double *a, int n, int k, int *iz) {
 
       getchar();
       */
+      
     }
     actualArray[current][0] = 1;
     current++;
@@ -337,13 +338,13 @@ void seek(double *a, int n, int k, int *iz) {
 	for (k = actualArray[j][START]; k <= actualArray[j][END]; k++)
 	  if (added[permutation[k]] == 0) {
 	      points[length++] = permutation[k];
-	      added[permutation[j]] = 1;
+	      added[permutation[k]] = 1;
 	    }
       }
     }
 
-    printf("row %d points:", i);
-    printMatrix(points, 1, length);
+    //printf("row %d points:", i);
+    //printMatrix(points, 1, length);
     //getchar();
 
     find_k_smallest(a[i], a[n+i], points, length, k, i, iz, a, n);
@@ -354,19 +355,19 @@ void seek(double *a, int n, int k, int *iz) {
 }
 
 
-void problem(int n, int k) {
+int problem(int n, int k) {
   double *a = (double*)malloc(n*2*sizeof(double));
   int *iz_control = (int*)malloc(n*k*sizeof(int));
   int *iz = (int*)malloc(n*k*sizeof(int));
   int i, j;  
   
-  double test[20] = {0.0554, 0.6313, 0.7160, 0.7142, 0.3439, 0.5671, 0.4723, 0.4829, 0.8966, 0.9049, 0.4566, 0.2847, 0.0942, 0.0024, 0.4986, 0.3054, 0.2576, 0.9427, 0.0591, 0.3071};
-  for (i = 0; i < 20; i++)
-    a[i] = test[i];  
+  //double test[20] = {0.0554, 0.6313, 0.7160, 0.7142, 0.3439, 0.5671, 0.4723, 0.4829, 0.8966, 0.9049, 0.4566, 0.2847, 0.0942, 0.0024, 0.4986, 0.3054, 0.2576, 0.9427, 0.0591, 0.3071};
+  //for (i = 0; i < 20; i++)
+  //  a[i] = test[i];  
 
-  //for (i = 0; i < 2; i++)
-  //  for (j = 0; j < n; j++) 
-  //    a[i*n+j] = (double)rand()/(double)RAND_MAX;
+  for (i = 0; i < 2; i++)
+    for (j = 0; j < n; j++) 
+      a[i*n+j] = (double)rand()/(double)RAND_MAX;
 
 
 
@@ -376,34 +377,69 @@ void problem(int n, int k) {
       iz_control[i*k+j] = -1;
     }
 
-  printf("Dots\n");
-  printDoubleMatrix(a, 2, n);
+  //printf("Dots\n");
+  //printDoubleMatrix(a, 2, n);
 
 
 
+  int t1, t2, t3;
 
+  t1 = clock();
   seek(a, n, k, iz);
-
+  t2 = clock();
   seek_naive(a, n, k, iz_control);
-  printf("Control Result\n");
-  printMatrix(iz_control, n, k);
+  t3 = clock();
+  //printf("Control Result\n");
+  //printMatrix(iz_control, n, k);
 
-  printf("Test Result\n");
-  printMatrix(iz, n, k);
+  //printf("Test Result\n");
+  //printMatrix(iz, n, k);
 
+
+  printf("Fast: %f, Naive: %f\n", (float)(t2-t1)/(float)CLOCKS_PER_SEC, (float)(t3-t2)/(float)CLOCKS_PER_SEC);
+
+  
   int error = 0;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     for (j = 0; j < k; j++) 
       if (iz_control[i*k+j] != iz[i*k+j]) {
-	printf("Diff: (%d, %d)\n", i, j);
+	//printf("Diff: (%d, %d)\n", i, j);
 	error = 1;
+	break;
       }
-  if (error == 0)
-    printf("********\nCorrect\n********\n");
+    if (error == 1)
+      break;
+  }
+  if (error == 0) {
+    printf("Correct\n");
+    return 0;
+  }
+  else {
+    printf("\n\nDots\n");
+    printDoubleMatrix(a, 2, n);
+    return 1;
+  }
+  
       
 }
 int main() {
   srand((unsigned)time(NULL));
-  problem(10, 5);
+  /*
+  while (1) {
+    int n = rand() % 10000 + 10;
+    int k = rand() % (n-1) + 1;
+    printf("n=%d, k=%d\n", n, k);
+    if (problem(n, k) == 1) 
+      break;
+  }
+  */
+
+  int n, k;
+  for (n = 100; n <= 100000; n = n * 10) {
+    for (k = 10; k <= n / 10; k = k * 10) {
+      printf("n=%d, k=%d\n", n, k);
+      problem(n, k);
+    }
+  }
   return 0;
 }
