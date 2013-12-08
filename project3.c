@@ -86,17 +86,19 @@ void find_k_smallest(double x, double y, int points[], int length, int k, int ro
     struct heapItem *elem = (struct heapItem*)malloc(sizeof(struct heapItem));
     elem->value = distance(x, y, a[idx], a[n+idx]);
     elem->idx = idx;
-    //printf("%d: %f\n", idx, elem->value);
     insertHeap(h, elem);
+    
+    //printf("%d: %f\n", idx, elem->value);
+    //printHeap(h);
+    //getchar();
   }
-  //printHeap(h);
-  //getchar();
 
   for (i = k-1; i >= 0; --i)
     iz[row*k+i] = popHeap(h);
   //for (i = 0; i < k; ++i)
   //  printf("%d\t", iz[row*k+i]);
   //printf("\n");
+  //getchar();
   return;
 
 }
@@ -200,7 +202,6 @@ void quadSplit(int actualArray[][8], double boxArray[][4], int *permutation, int
   addNewBoxEntry(boxArray, next+3, (x1+x2)/2, x2, y1, (y1+y2)/2);
   
 
-  int i;
   int count = 0;
   while (count < 4) {
     int s = head;
@@ -223,18 +224,24 @@ void quadSplit(int actualArray[][8], double boxArray[][4], int *permutation, int
   return;
 }
 
-int intersect(double boxArray[][4], int row, int x, int y, int r) {
+int intersect(double boxArray[][4], int row, double x, double y, double r) {
+  //this condition has been added
   if (isInBox(x, y, boxArray, row))
     return 1;
-  if (distance(x, y, boxArray[row][0], boxArray[row][3]) < r ||
-      distance(x, y, boxArray[row][1], boxArray[row][3]) < r ||
-      distance(x, y, boxArray[row][0], boxArray[row][2]) < r ||
-      distance(x, y, boxArray[row][1], boxArray[row][2]) < r)
+
+  double d1 = distance(x, y, boxArray[row][0], boxArray[row][3]);
+  double d2 = distance(x, y, boxArray[row][1], boxArray[row][3]);
+  double d3 = distance(x, y, boxArray[row][0], boxArray[row][2]);
+  double d4 = distance(x, y, boxArray[row][1], boxArray[row][2]);
+  //printf("box: %d, radius=%f, %f, %f, %f, %f\n", row, r, d1, d2, d3, d4);
+  if (d1 <= r || d2 <= r || d3 <= r || d4 <= r) {
     return 1;
+  }
  
   if (isInBox(x, y+r, boxArray, row) || isInBox(x, y-r, boxArray, row) ||
-      isInBox(x-r, y, boxArray, row) || isInBox(x+r, y, boxArray, row))
+      isInBox(x-r, y, boxArray, row) || isInBox(x+r, y, boxArray, row)) {
     return 1;
+  }
   return 0;
 }
 
@@ -264,7 +271,7 @@ void seek(double *a, int n, int k, int *iz) {
       quadSplit(actualArray, boxArray, permutation, current, next, a, n);
       next += 4;
 
-      
+      /*
       printf("permutation: \n");
       for (i = 0; i < n; ++i)
 	printf("%d ", permutation[i]);
@@ -274,6 +281,7 @@ void seek(double *a, int n, int k, int *iz) {
       printActual(actualArray, next);
 
       getchar();
+      */
     }
     actualArray[current][0] = 1;
     current++;
@@ -303,33 +311,40 @@ void seek(double *a, int n, int k, int *iz) {
     int f = actualArray[current][FATHER];
     double r = getRadius(a[i], a[n+i], boxArray, f);
 
-    printf("radius=%f for point %d (%f, %f) in box %d [%f, %f], [%f, %f]\n",
-	   r, i, a[i], a[n+i], f, boxArray[f][0], boxArray[f][1], boxArray[f][2], 
-    	   boxArray[f][3]);
+    //printf("radius=%f for point %d (%f, %f) in box %d [%f, %f], [%f, %f]\n",
+    //   r, i, a[i], a[n+i], f, boxArray[f][0], boxArray[f][1], boxArray[f][2], 
+    //	   boxArray[f][3]);
 
     //getchar();
 
     int points[BIG_NUMBER];
     int length = 0;
-    for (j = actualArray[f][START]; j <= actualArray[f][END]; ++j)
+    int added[n];
+    for (j = 0; j < n; j++)
+      added[j] = 0;
+    for (j = actualArray[f][START]; j <= actualArray[f][END]; ++j) {
       points[length++] = permutation[j];
+      added[permutation[j]] = 1;
+    }
 
     //find all squares that intersect with the circle
     for (j = 0; j < next; ++j) {
       if (j == f || actualArray[j][CHILDREN] != 0 || actualArray[j][FATHER] == f)
 	continue;
-      printf("intersect with %d?\n", j);
       if (intersect(boxArray, j, a[i], a[n+i], r) == 1) {
-	printf("Yes\n");
+	//printf("intersect with %d\n", j);
 	int k;
 	for (k = actualArray[j][START]; k <= actualArray[j][END]; k++)
-	  points[length++] = permutation[k];
+	  if (added[permutation[k]] == 0) {
+	      points[length++] = permutation[k];
+	      added[permutation[j]] = 1;
+	    }
       }
     }
 
-    printf("points included:");
+    printf("row %d points:", i);
     printMatrix(points, 1, length);
-    getchar();
+    //getchar();
 
     find_k_smallest(a[i], a[n+i], points, length, k, i, iz, a, n);
   }
@@ -343,20 +358,17 @@ void problem(int n, int k) {
   double *a = (double*)malloc(n*2*sizeof(double));
   int *iz_control = (int*)malloc(n*k*sizeof(int));
   int *iz = (int*)malloc(n*k*sizeof(int));
+  int i, j;  
   
-  double test[20] = {0.993442, 0.772750, 0.611080, 0.415753, 0.556729, 0.943072, 0.208224, 0.626443, 0.624126, 0.680003, 0.804673, 0.142956, 0.665403, 0.433299, 0.456702, 0.787794, 0.452551, 0.026958, 0.091056, 0.384438};
-  
-  int i, j;
+  double test[20] = {0.0554, 0.6313, 0.7160, 0.7142, 0.3439, 0.5671, 0.4723, 0.4829, 0.8966, 0.9049, 0.4566, 0.2847, 0.0942, 0.0024, 0.4986, 0.3054, 0.2576, 0.9427, 0.0591, 0.3071};
+  for (i = 0; i < 20; i++)
+    a[i] = test[i];  
+
   //for (i = 0; i < 2; i++)
   //  for (j = 0; j < n; j++) 
   //    a[i*n+j] = (double)rand()/(double)RAND_MAX;
 
-  //for (i = 0; i < n*2; ++i)
-  //  printf("%f, ", a[i]);
-  //printf("\n");
 
-  for (i = 0; i < 20; i++)
-    a[i] = test[i];
 
   for (i = 0; i < n; i++)
     for (j = 0; j < k; j++) {
@@ -379,9 +391,19 @@ void problem(int n, int k) {
   printf("Test Result\n");
   printMatrix(iz, n, k);
 
+  int error = 0;
+  for (i = 0; i < n; i++)
+    for (j = 0; j < k; j++) 
+      if (iz_control[i*k+j] != iz[i*k+j]) {
+	printf("Diff: (%d, %d)\n", i, j);
+	error = 1;
+      }
+  if (error == 0)
+    printf("********\nCorrect\n********\n");
+      
 }
 int main() {
   srand((unsigned)time(NULL));
-  problem(10, 2);
+  problem(10, 5);
   return 0;
 }

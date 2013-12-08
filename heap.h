@@ -65,7 +65,7 @@ void heapDown(struct Heap *h) {
       double left_value = h->content[left].value;
       double right_value = h->content[right].value;
       double current_value = h->content[current].value;
-      if (current < left_value && current_value < right_value) {
+      if (current_value < left_value && current_value < right_value) {
 	if (left_value < right_value) {
 	  swapItem(&h->content[current], &h->content[right]);
 	  current = right;
