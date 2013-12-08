@@ -6,7 +6,7 @@
 #include <time.h>
 #include "heap.h"
 
-int BIG_NUMBER = 100000;
+int BIG_NUMBER = 150000;
 int PROCESSED = 0;
 int START = 1;
 int END = 2;
