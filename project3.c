@@ -6,7 +6,15 @@
 #include <time.h>
 #include "heap.h"
 
-int BIG_NUMBER = 150000;
+//int BIG_NUMBER = 150000;
+#define BIG_NUMBER 1000000
+
+//make these two become global variable will solve the problem of stack overflow
+//testing naive with number bigger than 
+double boxArray[BIG_NUMBER][4];
+int actualArray[BIG_NUMBER][8];
+
+
 int PROCESSED = 0;
 int START = 1;
 int END = 2;
@@ -95,6 +103,7 @@ void find_k_smallest(double x, double y, int points[], int length, int k, int ro
 
   for (i = k-1; i >= 0; --i)
     iz[row*k+i] = popHeap(h);
+
   //for (i = 0; i < k; ++i)
   //  printf("%d\t", iz[row*k+i]);
   //printf("\n");
@@ -103,14 +112,14 @@ void find_k_smallest(double x, double y, int points[], int length, int k, int ro
 
 }
 
-void find_k_smallest_naive(double *d_matrix, int n, int k, int row, int *iz) {
+void find_k_smallest_naive(double *a, int n, int k, int row, int *iz) {
   int i;
   struct Heap *h = initHeap(k);
   for (i = 0; i < n; i++) {
     if (i == row)
       continue;
     struct heapItem *elem = (struct heapItem*)malloc(sizeof(struct heapItem));
-    elem->value = d_matrix[row*n+i];
+    elem->value = distance(a[row], a[n+row], a[i], a[n+i]);
     elem->idx = i;
     insertHeap(h, elem);
   }
@@ -125,25 +134,27 @@ void find_k_smallest_naive(double *d_matrix, int n, int k, int row, int *iz) {
   return;
 }
 void seek_naive(double *a, int n, int k, int *iz) {
-  double *d_matrix = (double*)malloc(n*n*sizeof(double)); //keep track all the distances
-  int i, j;
+  int i;
 
-  for (i = 0; i < n; ++i)
-    d_matrix[i*n+i] = -1;
+  //this will run into mem allocation problem
+  //double *d_matrix = (double*)malloc(n*n*sizeof(double)); //keep track all the distances
 
-  for (i = 0; i < n-1; ++i) 
-    for (j = i+1; j < n; ++j) {
-      double d = distance(a[i], a[n+i], a[j], a[n+j]);
-      d_matrix[i*n+j] = d;
-      d_matrix[j*n+i] = d;
-    }
+  //for (i = 0; i < n; ++i)
+  //  d_matrix[i*n+i] = -1;
+
+  //for (i = 0; i < n-1; ++i) 
+  //  for (j = i+1; j < n; ++j) {
+  //    double d = distance(a[i], a[n+i], a[j], a[n+j]);
+  //    d_matrix[i*n+j] = d;
+  //    d_matrix[j*n+i] = d;
+  //  }
 
   //printf("Distances\n");
   //printDoubleMatrix(d_matrix, n, n);
 
 
   for (i = 0; i < n; i++) 
-    find_k_smallest_naive(d_matrix, n, k, i, iz);
+    find_k_smallest_naive(a, n, k, i, iz);
   return;
 }
 void addNewBoxEntry(double boxArray[][4], int row, double x1, double x2, double y1, double y2) {
@@ -251,8 +262,8 @@ void seek(double *a, int n, int k, int *iz) {
   for (i = 0; i < n; i++)
     permutation[i] = i; 
   
-  double boxArray[BIG_NUMBER][4];
-  int actualArray[BIG_NUMBER][8];
+  //double boxArray[BIG_NUMBER][4];
+  //int actualArray[BIG_NUMBER][8];
  
   addNewActualEntry(actualArray, 0, 0, n-1, -1);
   addNewBoxEntry(boxArray, 0, 0.0, 1.0, 0.0, 1.0);
@@ -262,11 +273,11 @@ void seek(double *a, int n, int k, int *iz) {
   int current = 0;
   int next = 1;
   while (current < next) {
-    //printf("current=%d, next=%d\n", current, next);
     //count how many points are there in the section
     int e = actualArray[current][END];
     int s = actualArray[current][START];
-    //printf("e=%d, s=%d\n", e, s);
+
+    //the range of e and s denotes the number of points in the box
     if (e-s+1 > k) {
       quadSplit(actualArray, boxArray, permutation, current, next, a, n);
       next += 4;
@@ -318,7 +329,7 @@ void seek(double *a, int n, int k, int *iz) {
 
     //getchar();
 
-    int points[BIG_NUMBER];
+    int points[n];
     int length = 0;
     int added[n];
     for (j = 0; j < n; j++)
@@ -356,6 +367,7 @@ void seek(double *a, int n, int k, int *iz) {
 
 
 int problem(int n, int k) {
+  printf("n=%d, k=%d\n", n, k);
   double *a = (double*)malloc(n*2*sizeof(double));
   int *iz_control = (int*)malloc(n*k*sizeof(int));
   int *iz = (int*)malloc(n*k*sizeof(int));
@@ -387,8 +399,12 @@ int problem(int n, int k) {
   t1 = clock();
   seek(a, n, k, iz);
   t2 = clock();
+
+
   seek_naive(a, n, k, iz_control);
   t3 = clock();
+  
+
   //printf("Control Result\n");
   //printMatrix(iz_control, n, k);
 
@@ -415,8 +431,8 @@ int problem(int n, int k) {
     return 0;
   }
   else {
-    printf("\n\nDots\n");
-    printDoubleMatrix(a, 2, n);
+    printf("\nDots\n");
+    //printDoubleMatrix(a, 2, n);
     return 1;
   }
   
@@ -424,22 +440,31 @@ int problem(int n, int k) {
 }
 int main() {
   srand((unsigned)time(NULL));
-  /*
+  
+  /* 
+     //test correctness
+     
   while (1) {
     int n = rand() % 10000 + 10;
     int k = rand() % (n-1) + 1;
-    printf("n=%d, k=%d\n", n, k);
     if (problem(n, k) == 1) 
       break;
   }
   */
 
-  int n, k;
-  for (n = 100; n <= 100000; n = n * 10) {
-    for (k = 10; k <= n / 10; k = k * 10) {
-      printf("n=%d, k=%d\n", n, k);
-      problem(n, k);
+  /*
+    test performance
+    
+  int ns[12] = {100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000};
+  int k;
+  int i;
+  for (i = 0; i < 12; ++i) {
+    for (k = 10; k <= ns[i]/10; k = k * 10) {
+      problem(ns[i], k);
     }
   }
+  */
+
+  problem(50000, 100);
   return 0;
 }
