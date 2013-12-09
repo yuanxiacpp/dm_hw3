@@ -7,12 +7,12 @@
 #include "heap.h"
 
 //int BIG_NUMBER = 150000;
-#define BIG_NUMBER 1000000
+#define BIG_NUMBER 100000
 
 //make these two become global variable will solve the problem of stack overflow
-//testing naive with number bigger than 
-double boxArray[BIG_NUMBER][4];
-int actualArray[BIG_NUMBER][8];
+//to use following two global variable please comment out line 265-266 and change BIG_NUMBER respectively
+//double boxArray[BIG_NUMBER][4];
+//int actualArray[BIG_NUMBER][8];
 
 
 int PROCESSED = 0;
@@ -262,8 +262,8 @@ void seek(double *a, int n, int k, int *iz) {
   for (i = 0; i < n; i++)
     permutation[i] = i; 
   
-  //double boxArray[BIG_NUMBER][4];
-  //int actualArray[BIG_NUMBER][8];
+  double boxArray[BIG_NUMBER][4];
+  int actualArray[BIG_NUMBER][8];
  
   addNewActualEntry(actualArray, 0, 0, n-1, -1);
   addNewBoxEntry(boxArray, 0, 0.0, 1.0, 0.0, 1.0);
@@ -453,18 +453,19 @@ int main() {
   */
 
   /*
-    test performance
+    //test performance
     
   int ns[12] = {100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000};
   int k;
   int i;
   for (i = 0; i < 12; ++i) {
-    for (k = 10; k <= ns[i]/10; k = k * 10) {
+    for (k = 10; k <= 1000; k = k * 10) {
+      if (k >= ns[i])
+	break;
       problem(ns[i], k);
     }
   }
   */
-
-  problem(50000, 100);
+  problem(500, 100);
   return 0;
 }
